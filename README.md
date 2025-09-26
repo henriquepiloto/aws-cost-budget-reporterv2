@@ -1,169 +1,134 @@
-# 📊 AWS Cost Budget Reporter v2 + Prisma Admin
+# AWS Cost Budget Reporter v2
 
-Repositório integrado contendo duas soluções AWS complementares:
+Sistema completo de monitoramento e relatórios de custos AWS usando arquitetura ECS Fargate.
 
-## 🏗️ **Projetos Incluídos**
+## 🚀 Status do Projeto
 
-### 📊 **1. AWS Cost Budget Reporter**
-Sistema de relatórios e monitoramento de custos AWS.
+**✅ IMPLANTADO E FUNCIONANDO**
 
-**Status:** 🚧 Em desenvolvimento  
-**Localização:** `/cost-reporter/`
+- **URL**: https://costcollector.selectsolucoes.com
+- **Status**: Ativo e operacional
+- **Arquitetura**: ECS Fargate com containers Docker
+- **SSL**: Certificado válido via ACM
 
-### 🔐 **2. Prisma Admin - Painel Administrativo Cloudinho**
-Sistema completo de administração para chatbot IA com interface web, autenticação, gerenciamento de usuários e customização visual.
+## 🏗️ Arquitetura
 
-**Status:** ✅ Produção  
-**URL:** https://prisma.selectsolucoes.com  
-**Localização:** `/prisma-admin/`
+### Componentes Principais
+- **ECS Fargate Cluster**: Execução de containers serverless
+- **Application Load Balancer**: Distribuição de tráfego com SSL
+- **ECR**: Repositórios de imagens Docker
+- **DynamoDB**: Armazenamento de dados de custo
+- **S3**: Buckets para frontend e relatórios
+- **Route53**: DNS e certificado SSL
+- **Secrets Manager**: Credenciais seguras
 
-## 🌐 **Acesso aos Sistemas**
+### Serviços
+1. **API Service**: API REST para consulta de dados
+2. **Data Collector**: Coleta automática de dados de custo
+3. **Report Generator**: Geração de relatórios periódicos
 
-### Prisma Admin
-- **URL:** https://prisma.selectsolucoes.com
-- **Credenciais Admin:** `admin` / `admin123`
-- **Funcionalidades:**
-  - 🔐 Sistema de autenticação completo
-  - 💬 Chat com IA (Amazon Bedrock)
-  - 👥 Gerenciamento de usuários
-  - 🎨 Customização visual completa
-  - ⚙️ Configurações do sistema
+## 📦 Containers Docker
 
-### Cost Reporter
-- **Status:** Em desenvolvimento
-- **Funcionalidades planejadas:**
-  - 📊 Relatórios de custos AWS
-  - 📈 Análise de tendências
-  - 🚨 Alertas de orçamento
-  - 📧 Notificações automáticas
-
-## 📁 **Estrutura do Repositório**
-
-```
-aws-cost-budget-reporterv2/
-├── 📂 prisma-admin/           # Painel Admin Cloudinho
-│   ├── 📂 frontend/           # Interface web (HTML/CSS/JS)
-│   ├── 📂 backend/            # Lambda functions (Python)
-│   ├── 📂 docs/               # Documentação completa
-│   └── 📂 infrastructure/     # Scripts de deploy
-├── 📂 cost-reporter/          # Sistema de custos AWS
-│   ├── 📂 frontend/           # Dashboard de custos
-│   ├── 📂 backend/            # APIs de relatórios
-│   ├── 📂 docs/               # Documentação
-│   └── 📂 infrastructure/     # Terraform/CloudFormation
-├── 📂 shared/                 # Recursos compartilhados
-│   ├── 📂 utils/              # Utilitários comuns
-│   └── 📂 configs/            # Configurações globais
-└── README.md                  # Este arquivo
+### API Service
+```dockerfile
+FROM python:3.11-slim
+# FastAPI + Uvicorn
+EXPOSE 8000
 ```
 
-## 🚀 **Deploy e Configuração**
-
-### Prisma Admin (Produção)
-```bash
-cd prisma-admin/
-./infrastructure/deploy.sh all
+### Data Collector
+```dockerfile
+FROM python:3.11-slim
+# Boto3 + Cost Explorer API
 ```
 
-### Cost Reporter (Em desenvolvimento)
-```bash
-cd cost-reporter/
-# Scripts de deploy em desenvolvimento
+### Report Generator
+```dockerfile
+FROM python:3.11-slim
+# Boto3 + Jinja2 templates
 ```
 
-## 📚 **Documentação Detalhada**
-
-### Prisma Admin
-- [📡 API Documentation](prisma-admin/docs/API.md)
-- [🚀 Deployment Guide](prisma-admin/docs/DEPLOYMENT.md)
-- [🎨 Customization Guide](prisma-admin/docs/CUSTOMIZATION.md)
-- [📝 Changelog](prisma-admin/CHANGELOG.md)
-
-### Cost Reporter
-- 🚧 Documentação em desenvolvimento
-
-## 🏗️ **Arquitetura AWS**
-
-### Prisma Admin
-- **Frontend:** S3 + CloudFront
-- **Backend:** Lambda + API Gateway
-- **Banco:** RDS MySQL
-- **IA:** Amazon Bedrock (Claude)
-- **Domínio:** prisma.selectsolucoes.com
-
-### Cost Reporter (Planejado)
-- **Frontend:** S3 + CloudFront
-- **Backend:** Lambda + API Gateway
-- **Dados:** Cost Explorer API + S3
-- **Notificações:** SNS + SES
-
-## 🔧 **Desenvolvimento**
+## 🛠️ Deploy
 
 ### Pré-requisitos
 - AWS CLI configurado
-- Python 3.9+
-- Node.js (para ferramentas de build)
-- Acesso às contas AWS necessárias
+- Docker instalado
+- Terraform instalado
 
-### Configuração Local
+### Build e Deploy
 ```bash
-# Clone o repositório
-git clone https://github.com/SEU_USUARIO/aws-cost-budget-reporterv2.git
-cd aws-cost-budget-reporterv2
+# Build e push das imagens
+./build-and-deploy.sh
 
-# Configurar Prisma Admin
-cd prisma-admin/backend
-pip install -r requirements.txt
-
-# Configurar Cost Reporter (quando disponível)
-cd ../cost-reporter/backend
-# Instruções em desenvolvimento
+# Deploy da infraestrutura
+cd cost-reporter/infrastructure/terraform
+terraform init
+terraform apply
 ```
 
-## 🤝 **Contribuição**
+## 🌐 Endpoints da API
 
-### Prisma Admin
-- Sistema em produção
-- Melhorias e correções bem-vindas
-- Seguir padrões estabelecidos
+- `GET /` - Informações da API
+- `GET /health` - Health check
+- `GET /costs` - Dados de custo coletados
 
-### Cost Reporter
-- Sistema em desenvolvimento
-- Contribuições para arquitetura inicial
-- Definição de requisitos
+## 📊 Recursos AWS Utilizados
 
-## 📊 **Status dos Projetos**
+### Compute
+- **ECS Fargate**: 2 tasks API service
+- **EventBridge**: Agendamento de tarefas
 
-| Projeto | Status | Versão | Última Atualização |
-|---------|--------|--------|--------------------|
-| Prisma Admin | ✅ Produção | v1.0.0 | 2025-09-26 |
-| Cost Reporter | 🚧 Desenvolvimento | v0.1.0 | TBD |
+### Storage
+- **DynamoDB**: cost-reporter-cost-data
+- **S3**: Frontend e relatórios
+- **ECR**: 3 repositórios de imagens
 
-## 🎯 **Roadmap**
+### Network
+- **VPC**: Integração com infraestrutura existente
+- **ALB**: Load balancer com SSL
+- **Route53**: DNS costcollector.selectsolucoes.com
 
-### Prisma Admin v1.1.0
-- [ ] Histórico de conversas persistente
-- [ ] Dashboard com analytics
-- [ ] Tema escuro/claro
-- [ ] Múltiplos idiomas
+### Security
+- **ACM**: Certificado SSL automático
+- **Secrets Manager**: Credenciais RDS
+- **IAM**: Roles e políticas específicas
 
-### Cost Reporter v1.0.0
-- [ ] Definir arquitetura base
-- [ ] Implementar coleta de dados
-- [ ] Criar dashboard inicial
-- [ ] Sistema de alertas
+## 💰 Otimização de Custos
 
-## 📞 **Suporte**
+- **Fargate Spot**: Até 70% de economia
+- **Auto Scaling**: Ajuste automático de capacidade
+- **Scheduled Tasks**: Execução sob demanda
+- **Lifecycle Policies**: Limpeza automática de imagens
 
-- **Email:** suporte@selectsolucoes.com
-- **Issues:** GitHub Issues
-- **Documentação:** Ver pastas `/docs` de cada projeto
+## 🔧 Configuração
 
-## 📄 **Licença**
+### Variáveis Terraform
+```hcl
+domain_name = "costcollector.selectsolucoes.com"
+environment = "prod"
+```
 
-Projeto proprietário - Select Soluções  
-© 2025 Todos os direitos reservados
+### Integração com Recursos Existentes
+- **VPC**: vpc-04c0a089dd691442c
+- **RDS**: glpi-database-instance-1
+- **Lambda**: chatbot-auth (preservado)
+
+## 📈 Monitoramento
+
+- **CloudWatch Logs**: /ecs/cost-reporter/*
+- **ECS Service Events**: Monitoramento automático
+- **ALB Health Checks**: Verificação de saúde
+
+## 🔄 CI/CD
+
+Repositório integrado com build automatizado:
+- Dockerfiles otimizados
+- Scripts de deploy
+- Gitignore configurado
+- Documentação completa
 
 ---
 
-**Desenvolvido com ❤️ pela equipe Select Soluções**
+**Desenvolvido por**: Henrique Piloto  
+**Repositório**: aws-cost-budget-reporterv2  
+**Última atualização**: 2025-09-26
