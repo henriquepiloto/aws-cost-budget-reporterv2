@@ -114,7 +114,7 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
 
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "ecs" {
-  for_each = toset(["data-collector", "api-service"])
+  for_each = toset(["data-collector", "api-service", "frontend"])
   
   name              = "/ecs/${local.project_name}/${each.key}"
   retention_in_days = 7

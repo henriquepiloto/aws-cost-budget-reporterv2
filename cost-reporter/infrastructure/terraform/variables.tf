@@ -16,6 +16,7 @@ variable "container_cpu" {
   default = {
     data_collector = 256
     api_service   = 512
+    frontend      = 256
   }
 }
 
@@ -25,6 +26,7 @@ variable "container_memory" {
   default = {
     data_collector = 512
     api_service   = 1024
+    frontend      = 512
   }
 }
 
@@ -32,6 +34,12 @@ variable "domain_name" {
   description = "Domain name for the application"
   type        = string
   default     = "costs.selectsolucoes.com"
+}
+
+variable "frontend_domain_name" {
+  description = "Domain name for the frontend application"
+  type        = string
+  default     = "cloudinho.selectsolucoes.com"
 }
 
 # Remove VPC and RDS variables since we use existing ones

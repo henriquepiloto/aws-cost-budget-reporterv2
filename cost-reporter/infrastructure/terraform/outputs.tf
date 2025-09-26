@@ -48,11 +48,17 @@ output "domain_name" {
   value       = var.domain_name
 }
 
+output "frontend_domain_name" {
+  description = "Domain name for the frontend application"
+  value       = var.frontend_domain_name
+}
+
 output "ecr_repositories" {
   description = "ECR repository URLs"
   value = {
     data_collector = aws_ecr_repository.data_collector.repository_url
     api_service   = aws_ecr_repository.api_service.repository_url
+    frontend      = aws_ecr_repository.frontend.repository_url
   }
 }
 

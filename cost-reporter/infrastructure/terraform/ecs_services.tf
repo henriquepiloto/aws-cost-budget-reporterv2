@@ -25,6 +25,31 @@ resource "aws_ecs_service" "api_service" {
   tags = local.common_tags
 }
 
+# Frontend Service
+resource "aws_ecs_service" "frontend" {
+  name            = "${local.project_name}-frontend-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.frontend.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    security_groups  = [aws_security_group.ecs.id]
+    subnets          = local.private_subnet_ids
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.frontend.arn
+    container_name   = "frontend"
+    container_port   = 3000
+  }
+
+  depends_on = [aws_lb_listener.https]
+
+  tags = local.common_tags
+}
+
 # Auto Scaling for API Service
 resource "aws_appautoscaling_target" "api_service" {
   max_capacity       = 10
