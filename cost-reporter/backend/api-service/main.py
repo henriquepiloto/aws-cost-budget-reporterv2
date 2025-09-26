@@ -1,9 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import pymysql
 import json
 
 app = FastAPI(title="Cost Reporter API - Complete Analytics")
+
+# Add CORS middleware for integration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://prisma.selectsolucoes.com",
+        "http://localhost:3000",
+        "http://localhost:8080"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 def get_db_credentials():
     secrets_client = boto3.client('secretsmanager', region_name='us-east-1')
@@ -30,6 +44,7 @@ def read_root():
     return {
         "message": "Cost Reporter API - Complete Analytics",
         "version": "3.0",
+        "integration": "Ready for prisma.selectsolucoes.com",
         "features": [
             "monthly_costs_6_months",
             "current_month_tracking", 
@@ -152,6 +167,29 @@ def get_budgets():
     except Exception as e:
         return {"error": str(e), "budgets": []}
 
+@app.get("/costs/by-service")
+def get_costs_by_service():
+    """Costs grouped by AWS service"""
+    try:
+        connection = get_db_connection()
+        try:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute("""
+                    SELECT service_name, SUM(cost) as total_cost, 
+                           AVG(cost) as avg_daily_cost, COUNT(DISTINCT date) as days
+                    FROM cost_data_detailed 
+                    WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                    GROUP BY service_name
+                    HAVING total_cost > 0
+                    ORDER BY total_cost DESC
+                    LIMIT 20
+                """)
+                return {"services": cursor.fetchall()}
+        finally:
+            connection.close()
+    except Exception as e:
+        return {"error": str(e), "services": []}
+
 @app.get("/alerts")
 def get_cost_alerts():
     """Cost alerts for current month"""
@@ -196,6 +234,7 @@ def health_check():
     return {
         "status": "healthy", 
         "version": "3.0", 
+        "integration": "prisma.selectsolucoes.com",
         "features": [
             "monthly_costs_6_months",
             "current_month_tracking", 

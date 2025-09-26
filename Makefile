@@ -22,7 +22,13 @@ build:
 test:
 	@echo "🧪 Testing API endpoints..."
 	@curl -s https://costcollector.selectsolucoes.com/health | jq .
-	@curl -s https://costcollector.selectsolucoes.com/ | jq .
+	@curl -s https://costcollector.selectsolucoes.com/costs/overview | jq '.current_month'
+
+# Test integration endpoints
+integration-test:
+	@echo "🔗 Testing integration endpoints..."
+	@echo "Monthly costs:" && curl -s https://costcollector.selectsolucoes.com/costs/monthly | jq '.monthly_costs[0:2]'
+	@echo "Budgets:" && curl -s https://costcollector.selectsolucoes.com/budgets | jq '.budgets[0]'
 
 # Clean Docker images
 clean:

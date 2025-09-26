@@ -32,4 +32,5 @@ echo "🔄 Updating ECS service..."
 aws ecs update-service --cluster $CLUSTER --service cost-reporter-api-service --force-new-deployment --region $REGION
 
 echo "✅ Deployment completed!"
-echo "🌐 Check status at: https://costcollector.selectsolucoes.com/health"
+echo "🌐 API: https://costcollector.selectsolucoes.com/health"
+echo "🔗 Integration ready for: prisma.selectsolucoes.com"
