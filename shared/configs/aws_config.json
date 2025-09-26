@@ -1,0 +1,44 @@
+{
+  "aws": {
+    "region": "us-east-1",
+    "account_id": "727706432228"
+  },
+  "projects": {
+    "prisma_admin": {
+      "name": "Prisma Admin - Cloudinho",
+      "status": "production",
+      "version": "1.0.0",
+      "domain": "prisma.selectsolucoes.com",
+      "resources": {
+        "s3_bucket": "prisma-admin-selectsolucoes",
+        "cloudfront_distribution": "E1SAZUX6DR5QF3",
+        "lambda_function": "chatbot-auth",
+        "api_gateway": "m153no51s0",
+        "rds_instance": "glpi-database-instance-1.cnhjpcs7r4ar.us-east-1.rds.amazonaws.com"
+      },
+      "endpoints": {
+        "frontend": "https://prisma.selectsolucoes.com",
+        "api": "https://m153no51s0.execute-api.us-east-1.amazonaws.com/prod"
+      }
+    },
+    "cost_reporter": {
+      "name": "AWS Cost Budget Reporter",
+      "status": "development",
+      "version": "0.1.0",
+      "domain": "costs.selectsolucoes.com",
+      "resources": {
+        "s3_bucket": "cost-reporter-selectsolucoes",
+        "lambda_function": "cost-reporter",
+        "api_gateway": "tbd"
+      },
+      "endpoints": {
+        "frontend": "https://costs.selectsolucoes.com",
+        "api": "tbd"
+      }
+    }
+  },
+  "shared_resources": {
+    "route53_zone": "selectsolucoes.com",
+    "certificate_arn": "arn:aws:acm:us-east-1:727706432228:certificate/your-cert-id"
+  }
+}

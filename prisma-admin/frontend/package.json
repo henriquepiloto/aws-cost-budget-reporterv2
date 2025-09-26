@@ -1,0 +1,21 @@
+{
+  "name": "prisma-admin-frontend",
+  "version": "1.0.0",
+  "description": "Frontend do Painel Administrativo Prisma Cloudinho",
+  "main": "index.html",
+  "scripts": {
+    "deploy": "aws s3 sync . s3://prisma-admin-selectsolucoes/ && aws cloudfront create-invalidation --distribution-id E1SAZUX6DR5QF3 --paths '/*'",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "admin",
+    "chatbot",
+    "ai",
+    "aws",
+    "cloudinho"
+  ],
+  "author": "Select Soluções",
+  "license": "PROPRIETARY",
+  "devDependencies": {},
+  "dependencies": {}
+}
