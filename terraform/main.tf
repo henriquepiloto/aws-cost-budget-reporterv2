@@ -120,6 +120,15 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = aws_secretsmanager_secret.db_credentials.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -132,6 +141,11 @@ resource "aws_lambda_function" "api" {
   handler         = "main.lambda_handler"
   runtime         = "python3.10"
   timeout         = 30
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   environment {
     variables = {
@@ -224,20 +238,242 @@ resource "aws_secretsmanager_secret" "db_credentials" {
   name = "${var.project_name}-db-credentials"
 }
 
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "Prisma Cost Intelligence VPC"
+  }
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "Prisma Cost Intelligence IGW"
+  }
+}
+
+# Public Subnets
+resource "aws_subnet" "public_a" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "Prisma Cost Intelligence Public Subnet A"
+  }
+}
+
+resource "aws_subnet" "public_b" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-east-1b"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "Prisma Cost Intelligence Public Subnet B"
+  }
+}
+
+# Private Subnets
+resource "aws_subnet" "private_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "Prisma Cost Intelligence Private Subnet A"
+  }
+}
+
+resource "aws_subnet" "private_b" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "Prisma Cost Intelligence Private Subnet B"
+  }
+}
+
+# NAT Gateway
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags = {
+    Name = "Prisma Cost Intelligence NAT EIP"
+  }
+}
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public_a.id
+
+  tags = {
+    Name = "Prisma Cost Intelligence NAT Gateway"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+# Route Tables
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "Prisma Cost Intelligence Public Route Table"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
+  }
+
+  tags = {
+    Name = "Prisma Cost Intelligence Private Route Table"
+  }
+}
+
+# Route Table Associations
+resource "aws_route_table_association" "public_a" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_b" {
+  subnet_id      = aws_subnet.public_b.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private_a" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "private_b" {
+  subnet_id      = aws_subnet.private_b.id
+  route_table_id = aws_route_table.private.id
+}
+
+# Lambda Security Group
+resource "aws_security_group" "lambda" {
+  name_prefix = "prisma-cost-intelligence-lambda-"
+  vpc_id      = aws_vpc.main.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Prisma Cost Intelligence Lambda Security Group"
+  }
+}
+
+# RDS Subnet Group
+resource "aws_db_subnet_group" "main" {
+  name       = "prisma-cost-intelligence-db-subnet-group"
+  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+
+  tags = {
+    Name = "Prisma Cost Intelligence DB subnet group"
+  }
+}
+
+# RDS Security Group
+resource "aws_security_group" "rds" {
+  name_prefix = "prisma-cost-intelligence-rds-"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Prisma Cost Intelligence RDS Security Group"
+  }
+}
+
+# Random password for database
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+}
+
+# RDS MySQL Database
+resource "aws_db_instance" "main" {
+  identifier = "prisma-cost-intelligence-db"
+  
+  engine         = "mysql"
+  engine_version = "8.0"
+  instance_class = "db.t3.micro"
+  
+  allocated_storage     = 20
+  max_allocated_storage = 100
+  storage_type          = "gp2"
+  storage_encrypted     = true
+  
+  db_name  = "prisma_cost_intelligence"
+  username = "admin"
+  password = random_password.db_password.result
+  
+  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  
+  backup_retention_period = 7
+  backup_window          = "03:00-04:00"
+  maintenance_window     = "sun:04:00-sun:05:00"
+  
+  skip_final_snapshot = true
+  deletion_protection = false
+  
+  tags = {
+    Name = "Prisma Cost Intelligence Database"
+  }
+}
+
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
   secret_string = jsonencode({
-    host     = var.db_host
-    username = var.db_username
-    password = var.db_password
-    database = var.db_name
+    username = aws_db_instance.main.username
+    password = random_password.db_password.result
+    engine   = "mysql"
+    host     = aws_db_instance.main.endpoint
+    port     = aws_db_instance.main.port
+    dbname   = aws_db_instance.main.db_name
   })
 }
 
 # Route53 and ACM (if domain is provided)
 data "aws_route53_zone" "main" {
   count = var.domain_name != "" ? 1 : 0
-  name  = var.domain_name
+  name  = "selectsolucoes.com"
 }
 
 resource "aws_acm_certificate" "cert" {
