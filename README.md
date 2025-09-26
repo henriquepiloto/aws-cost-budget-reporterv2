@@ -1,6 +1,6 @@
 # AWS Cost Budget Reporter v3.0
 
-Sistema completo de monitoramento e análise de custos AWS com arquitetura ECS Fargate e coleta avançada de dados.
+Sistema de monitoramento de custos AWS com Chat FinOps inteligente, arquitetura ECS Fargate e coleta básica de dados.
 
 ## 🚀 Status do Projeto
 
@@ -8,38 +8,31 @@ Sistema completo de monitoramento e análise de custos AWS com arquitetura ECS F
 
 - **URL**: https://costcollector.selectsolucoes.com
 - **Status**: Ativo e operacional
-- **Versão**: 3.0 - Complete Analytics
+- **Versão**: 3.0 - FinOps Chat + Basic Analytics
 - **Arquitetura**: ECS Fargate com containers Docker
+
+## 💬 Chat FinOps Inteligente
+
+### **Funcionalidade Principal:**
+- **Chat especializado** em análise de custos AWS
+- **Contexto automático** com dados reais da conta
+- **Integração Bedrock** para respostas inteligentes
+- **Análise executiva** com recomendações acionáveis
 
 ## 📊 Dados Coletados
 
-### **Análise Completa de Custos:**
+### **Coleta Básica de Custos:**
 - **Custos mensais**: Últimos 6 meses com histórico
 - **Mês atual**: Acompanhamento diário + acumulado
-- **Previsões**: Forecast de custos futuros
-- **Orçamentos**: Limites e % de utilização
-- **Alertas**: Contagem de alertas por mês
-
-### **Detalhamento por Serviço:**
-- EC2, RDS, ECS, S3, Lambda, CloudWatch
-- Tipos de uso específicos por serviço
-- Recursos individuais (instâncias, volumes)
-- Custos por região e zona de disponibilidade
+- **Account ID**: 727706432228 (Select Soluções)
 
 ## 🌐 Endpoints da API
 
-### **Análise Completa:**
-- `GET /costs/overview` - Visão geral completa
-- `GET /costs/monthly` - Últimos 6 meses
-- `GET /costs/current-month` - Progresso do mês atual
-- `GET /budgets` - Orçamentos com % de uso
-- `GET /alerts` - Alertas do mês atual
-
-### **Análise Detalhada:**
-- `GET /costs/detailed` - Detalhamento por serviço
-- `GET /costs/by-service` - Agregação por serviço
-- `GET /costs/resources` - Custos por recurso
+### **Endpoints Implementados:**
+- `POST /chat` - Chat FinOps com contexto AWS
+- `GET /costs/overview` - Visão geral dos custos
 - `GET /health` - Status do sistema
+- `GET /` - Informações da API
 
 ## 🏗️ Arquitetura
 
@@ -57,23 +50,14 @@ Sistema completo de monitoramento e análise de custos AWS com arquitetura ECS F
 
 ## 📦 Estrutura de Dados
 
-### **Tabelas MySQL:**
+### **Tabelas MySQL (Implementadas):**
 
 ```sql
 -- Custos mensais (6 meses)
-monthly_costs: year_month, total_cost, forecasted_cost, currency
+monthly_costs: month_year, total_cost, forecasted_cost, currency
 
 -- Acompanhamento mês atual  
-current_month_costs: date, daily_cost, month_to_date, forecasted_month
-
--- Orçamentos da conta
-budgets: budget_name, budget_limit, actual_spend, forecasted_spend
-
--- Alertas de custo
-cost_alerts: alert_date, alert_type, actual_amount, message
-
--- Detalhamento por serviço
-cost_data_detailed: service_name, usage_type, cost, resource_id
+current_month_costs: date, daily_cost, month_to_date, forecasted_month, currency
 ```
 
 ## ⏰ Coleta Automática
@@ -150,26 +134,35 @@ make clean          # Limpeza
 ```json
 {
   "monthly_costs_6_months": [
-    {"year_month": "2025-09", "total_cost": 4850.25, "currency": "USD"},
-    {"year_month": "2025-08", "total_cost": 4720.18, "currency": "USD"}
+    {"month_year": "2025-09", "total_cost": 4850.25, "currency": "USD"},
+    {"month_year": "2025-08", "total_cost": 4720.18, "currency": "USD"}
   ],
   "current_month": {
     "date": "2025-09-26",
     "daily_cost": 162.60,
     "month_to_date": 4230.45,
-    "forecasted_month": 4950.00
-  },
-  "budgets": [
-    {
-      "budget_name": "Monthly-Budget",
-      "budget_limit": 5000.00,
-      "actual_spend": 4230.45,
-      "usage_percentage": 84.61
-    }
-  ],
-  "alerts_this_month": {
-    "alert_count": 3,
-    "last_message": "Budget threshold exceeded"
+    "forecasted_month": 4950.00,
+    "currency": "USD"
+  }
+}
+```
+
+## 💬 Exemplo de Chat FinOps
+
+```bash
+# Pergunta ao chat
+curl -X POST https://costcollector.selectsolucoes.com/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Como estão os custos este mês?"}'
+
+# Resposta inteligente
+{
+  "response": "📊 ANÁLISE FINOPS - Select Soluções\n\n• Custo MTD: $7,288.18 USD\n• Média diária: $162.68 USD\n• Variação MoM: +24.7%\n\nRECOMENDAÇÕES:\n• Revisar instâncias EC2 subutilizadas\n• Considerar Reserved Instances\n• Economia estimada: $500-800/mês",
+  "session_id": "finops_session",
+  "context_used": {
+    "account_id": "727706432228",
+    "has_data": true,
+    "months_available": 6
   }
 }
 ```
@@ -206,12 +199,13 @@ region = "us-east-1"
 ## 🎯 Evolução do Projeto
 
 **v1.0**: Sistema básico Lambda  
-**v2.0**: Migração ECS + detalhamento por serviço  
-**v3.0**: Análise completa com orçamentos, previsões e alertas  
+**v2.0**: Migração ECS + estrutura básica  
+**v3.0**: Chat FinOps inteligente + coleta básica de custos  
 
 ---
 
 **Desenvolvido por**: Henrique Piloto  
 **Repositório**: aws-cost-budget-reporterv2  
 **URL**: https://costcollector.selectsolucoes.com  
+**Chat FinOps**: POST /chat  
 **Última atualização**: 2025-09-26

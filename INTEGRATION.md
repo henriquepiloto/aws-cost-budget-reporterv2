@@ -12,59 +12,56 @@
 
 ## 🌐 Endpoints para Integração
 
-### **Análise Completa:**
+### **Endpoints Implementados:**
 ```javascript
-// Visão geral completa
+// Visão geral dos custos
 GET https://costcollector.selectsolucoes.com/costs/overview
 
 // Resposta:
 {
   "monthly_costs_6_months": [...],
   "current_month": {...},
-  "budgets": [...],
-  "alerts_this_month": {...}
+  "status": "ready_for_finops_chat"
 }
+
+// Chat FinOps (principal funcionalidade)
+POST https://costcollector.selectsolucoes.com/chat
+
+// Health check
+GET https://costcollector.selectsolucoes.com/health
 ```
 
-### **Endpoints Específicos:**
+## 💬 Integração do Chat FinOps
+
+### **Funcionalidade Principal:**
 ```javascript
-// Custos mensais (6 meses)
-GET https://costcollector.selectsolucoes.com/costs/monthly
-
-// Mês atual
-GET https://costcollector.selectsolucoes.com/costs/current-month
-
-// Orçamentos
-GET https://costcollector.selectsolucoes.com/budgets
-
-// Alertas
-GET https://costcollector.selectsolucoes.com/alerts
-
-// Detalhamento por serviço
-GET https://costcollector.selectsolucoes.com/costs/by-service
-```
-
-## 💬 Integração do Chat
-
-### **Contexto para Bedrock:**
-```javascript
-// Função para buscar contexto de custos
-async function getCostContext() {
-  const response = await fetch('https://costcollector.selectsolucoes.com/costs/overview');
-  const data = await response.json();
+// Função para usar o Chat FinOps
+async function sendFinOpsMessage(message) {
+  const response = await fetch('https://costcollector.selectsolucoes.com/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: message,
+      session_id: `user_${Date.now()}`
+    })
+  });
   
-  return {
-    currentMonth: data.current_month,
-    budgets: data.budgets,
-    monthlyTrend: data.monthly_costs_6_months
-  };
+  const data = await response.json();
+  return data.response; // Resposta inteligente do Bedrock
 }
 
-// Integrar no prompt do chat existente
-const systemPrompt = `Você é um assistente de custos AWS.
-Contexto atual: ${JSON.stringify(await getCostContext())}
-Responda sobre custos, orçamentos e otimizações.`;
+// Integrar no chat existente
+const handleChatMessage = async (userMessage) => {
+  const finopsResponse = await sendFinOpsMessage(userMessage);
+  displayMessage(finopsResponse);
+};
 ```
+
+### **Contexto Automático:**
+O chat já inclui automaticamente:
+- Custos atuais da conta 727706432228
+- Tendência dos últimos 6 meses
+- Análise executiva com recomendações
 
 ## 📊 Componentes de Dashboard
 
@@ -75,40 +72,45 @@ const CurrentMonthCost = () => {
   const [data, setData] = useState(null);
   
   useEffect(() => {
-    fetch('https://costcollector.selectsolucoes.com/costs/current-month')
+    fetch('https://costcollector.selectsolucoes.com/costs/overview')
       .then(res => res.json())
-      .then(data => setData(data.current_month[0]));
+      .then(data => setData(data.current_month));
   }, []);
   
   return (
     <div className="cost-widget">
       <h3>Custo do Mês</h3>
       <p>Atual: ${data?.month_to_date}</p>
-      <p>Previsão: ${data?.forecasted_month}</p>
+      <p>Diário: ${data?.daily_cost}</p>
     </div>
   );
 };
 ```
 
-### **Gráfico de Tendência:**
+### **Chat FinOps Widget:**
 ```javascript
-// Dados para gráfico mensal
-const MonthlyChart = () => {
-  const [chartData, setChartData] = useState([]);
+// Widget de chat integrado
+const FinOpsChat = () => {
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
   
-  useEffect(() => {
-    fetch('https://costcollector.selectsolucoes.com/costs/monthly')
-      .then(res => res.json())
-      .then(data => {
-        const formatted = data.monthly_costs.map(item => ({
-          month: item.year_month,
-          cost: item.total_cost
-        }));
-        setChartData(formatted);
-      });
-  }, []);
+  const sendMessage = async () => {
+    const result = await fetch('https://costcollector.selectsolucoes.com/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const data = await result.json();
+    setResponse(data.response);
+  };
   
-  // Usar com Chart.js, D3, ou biblioteca de gráficos
+  return (
+    <div className="finops-chat">
+      <input value={message} onChange={e => setMessage(e.target.value)} />
+      <button onClick={sendMessage}>Perguntar ao FinOps</button>
+      <div className="response">{response}</div>
+    </div>
+  );
 };
 ```
 
@@ -130,20 +132,20 @@ app.add_middleware(
 
 ## 🎯 Plano de Implementação
 
-### **Fase 1: Dados Básicos**
+### **Fase 1: Chat FinOps (Pronto)**
+1. ✅ Integrar endpoint `/chat` no sistema existente
+2. ✅ Chat inteligente com contexto AWS automático
+3. ✅ Respostas executivas com recomendações
+
+### **Fase 2: Dashboard Básico**
 1. Integrar endpoint `/costs/overview` no dashboard
 2. Mostrar custo atual do mês
-3. Exibir orçamentos e % de uso
+3. Exibir tendência dos últimos 6 meses
 
-### **Fase 2: Chat Inteligente**
-1. Atualizar chat para usar contexto de custos
-2. Implementar perguntas sobre orçamentos
-3. Alertas proativos de custos
-
-### **Fase 3: Dashboard Avançado**
-1. Gráficos de tendência mensal
-2. Breakdown por serviço AWS
-3. Alertas visuais de orçamento
+### **Fase 3: Expansão (Futuro)**
+1. Implementar coleta de orçamentos
+2. Adicionar alertas de custo
+3. Detalhamento por serviço AWS
 
 ## 🧪 Testes de Integração
 
@@ -164,18 +166,25 @@ curl -H "Origin: https://prisma.selectsolucoes.com" \
 <div class="cost-summary-card">
   <h3>Resumo de Custos</h3>
   <div class="current-month">
-    <span>Mês Atual: $4,230.45</span>
-    <span>Previsão: $4,950.00</span>
+    <span>Mês Atual: $7,288.18</span>
+    <span>Média Diária: $162.68</span>
   </div>
-  <div class="budget-status">
-    <span>Orçamento: 84.6% usado</span>
-    <div class="progress-bar">
-      <div class="progress" style="width: 84.6%"></div>
-    </div>
+  <div class="finops-chat">
+    <button onclick="openFinOpsChat()">💬 Perguntar ao FinOps</button>
   </div>
+</div>
+```
+
+### **Chat FinOps Integrado:**
+```html
+<div class="finops-chat-widget">
+  <h4>🤖 Analista FinOps</h4>
+  <input id="finops-input" placeholder="Ex: Como estão os custos este mês?" />
+  <button onclick="sendFinOpsMessage()">Enviar</button>
+  <div id="finops-response" class="response-area"></div>
 </div>
 ```
 
 ---
 
-**🔗 Integração pronta para conectar prisma.selectsolucoes.com com costcollector.selectsolucoes.com**
+**🔗 Integração pronta: Chat FinOps + Dados básicos de custo**

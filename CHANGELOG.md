@@ -2,30 +2,27 @@
 
 ## [3.0.0] - 2025-09-26
 
-### 🎯 Complete Analytics Release
+### 🎯 FinOps Chat + Basic Analytics Release
 
 #### Added
+- **Chat FinOps inteligente**: Endpoint `/chat` com integração Bedrock
+- **Contexto automático**: Dados reais da conta AWS no chat
 - **Monthly costs tracking**: Last 6 months historical data
 - **Current month monitoring**: Daily cost tracking with month-to-date
-- **Cost forecasting**: AWS Cost Explorer forecast integration
-- **Budget monitoring**: AWS Budgets API integration with usage percentages
-- **Alert tracking**: Daily cost alerts count per month
-- **Advanced endpoints**: `/costs/overview`, `/costs/monthly`, `/budgets`, `/alerts`
-- **MySQL database**: Complete migration from DynamoDB to MySQL RDS
-- **Comprehensive data collection**: Multiple AWS APIs integration
+- **MySQL database**: Migration from DynamoDB to MySQL RDS
+- **Basic data collection**: Monthly and daily cost collection
 
 #### Changed
-- **Database**: Migrated from DynamoDB to MySQL RDS for better relational data
-- **API version**: Upgraded to v3.0 with complete analytics features
-- **Data collector**: Enhanced with forecast, budgets, and alerts collection
-- **Collection frequency**: Optimized for comprehensive monthly and daily data
+- **Database**: Migrated from DynamoDB to MySQL RDS
+- **API version**: Upgraded to v3.0 with FinOps Chat focus
+- **Main feature**: Chat FinOps as primary functionality
 - **Task count**: Reduced to 1 task for cost optimization
 
 #### Technical Improvements
-- **python-dateutil**: Added for advanced date calculations
+- **Bedrock integration**: Claude 3 Sonnet for intelligent responses
 - **Error handling**: Improved error handling for AWS API calls
-- **Data structure**: Normalized database schema for analytics
-- **Performance**: Optimized queries and data collection
+- **Data structure**: Simplified database schema for basic analytics
+- **Performance**: Optimized for chat response speed
 
 ## [2.0.0] - 2025-09-26
 
@@ -73,4 +70,4 @@
 
 ---
 
-**Migration Journey**: Lambda → ECS Basic → Service Breakdown → Complete Analytics
+**Migration Journey**: Lambda → ECS Basic → FinOps Chat + Basic Analytics

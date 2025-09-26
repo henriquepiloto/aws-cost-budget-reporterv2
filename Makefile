@@ -20,15 +20,16 @@ build:
 
 # Test API endpoints
 test:
-	@echo "🧪 Testing API endpoints..."
-	@curl -s https://costcollector.selectsolucoes.com/health | jq .
-	@curl -s https://costcollector.selectsolucoes.com/costs/overview | jq '.current_month'
+	@echo "🧪 Testing implemented endpoints..."
+	@echo "Health check:" && curl -s https://costcollector.selectsolucoes.com/health | jq .
+	@echo "Cost overview:" && curl -s https://costcollector.selectsolucoes.com/costs/overview | jq '.current_month'
+	@echo "Chat test:" && curl -s -X POST https://costcollector.selectsolucoes.com/chat -H "Content-Type: application/json" -d '{"message": "Status dos custos"}' | jq '.response'
 
 # Test integration endpoints
 integration-test:
 	@echo "🔗 Testing integration endpoints..."
-	@echo "Monthly costs:" && curl -s https://costcollector.selectsolucoes.com/costs/monthly | jq '.monthly_costs[0:2]'
-	@echo "Budgets:" && curl -s https://costcollector.selectsolucoes.com/budgets | jq '.budgets[0]'
+	@echo "API info:" && curl -s https://costcollector.selectsolucoes.com/ | jq '.features'
+	@echo "Health status:" && curl -s https://costcollector.selectsolucoes.com/health | jq '.finops_chat'
 
 # Clean Docker images
 clean:

@@ -35,34 +35,21 @@ make infra-apply    # Terraform apply
 
 ## 📋 Endpoints para Teste
 
-### **Análise Completa:**
+### **Endpoints Implementados:**
 ```bash
-# Visão geral completa
+# Chat FinOps (principal funcionalidade)
+curl -X POST https://costcollector.selectsolucoes.com/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Resumo dos custos AWS"}'
+
+# Visão geral dos custos
 curl https://costcollector.selectsolucoes.com/costs/overview
-
-# Custos mensais (6 meses)
-curl https://costcollector.selectsolucoes.com/costs/monthly
-
-# Mês atual
-curl https://costcollector.selectsolucoes.com/costs/current-month
-
-# Orçamentos
-curl https://costcollector.selectsolucoes.com/budgets
-
-# Alertas
-curl https://costcollector.selectsolucoes.com/alerts
-```
-
-### **Análise Detalhada:**
-```bash
-# Por serviço
-curl https://costcollector.selectsolucoes.com/costs/by-service
-
-# Recursos específicos
-curl https://costcollector.selectsolucoes.com/costs/resources
 
 # Health check
 curl https://costcollector.selectsolucoes.com/health
+
+# Informações da API
+curl https://costcollector.selectsolucoes.com/
 ```
 
 ## 🔧 Configuração
@@ -99,19 +86,14 @@ curl https://costcollector.selectsolucoes.com/health
 ### **Dados Coletados:**
 - Custos mensais (6 meses)
 - Custos diários do mês atual
-- Previsões de custo
-- Orçamentos da conta
-- Alertas de custo
+- Contexto para Chat FinOps
 
 ## 📊 Estrutura de Dados
 
 ### **Tabelas MySQL:**
 ```sql
-monthly_costs         # Custos mensais
+monthly_costs         # Custos mensais (6 meses)
 current_month_costs   # Mês atual diário
-budgets              # Orçamentos AWS
-cost_alerts          # Alertas de custo
-cost_data_detailed   # Detalhamento por serviço
 ```
 
 ## 🎯 Verificação de Deploy
@@ -133,12 +115,11 @@ make logs
 {
   "status": "healthy",
   "version": "3.0",
+  "integration": "prisma.selectsolucoes.com",
   "features": [
+    "finops_chat_analysis",
     "monthly_costs_6_months",
-    "current_month_tracking",
-    "cost_forecasting", 
-    "budget_monitoring",
-    "daily_alerts_tracking"
+    "current_month_tracking"
   ]
 }
 ```
