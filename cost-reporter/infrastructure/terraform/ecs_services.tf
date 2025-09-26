@@ -77,34 +77,6 @@ resource "aws_cloudwatch_event_target" "data_collector" {
   }
 }
 
-# EventBridge Rule for Report Generator (runs weekly)
-resource "aws_cloudwatch_event_rule" "report_generator_schedule" {
-  name                = "${local.project_name}-report-generator-schedule"
-  description         = "Trigger report generator weekly"
-  schedule_expression = "cron(0 8 ? * MON *)"  # 8 AM UTC every Monday
-
-  tags = local.common_tags
-}
-
-resource "aws_cloudwatch_event_target" "report_generator" {
-  rule      = aws_cloudwatch_event_rule.report_generator_schedule.name
-  target_id = "ReportGeneratorTarget"
-  arn       = aws_ecs_cluster.main.arn
-  role_arn  = aws_iam_role.eventbridge_ecs_role.arn
-
-  ecs_target {
-    task_count          = 1
-    task_definition_arn = aws_ecs_task_definition.report_generator.arn
-    launch_type         = "FARGATE"
-
-    network_configuration {
-      security_groups  = [aws_security_group.ecs.id]
-      subnets          = local.private_subnet_ids
-      assign_public_ip = false
-    }
-  }
-}
-
 # IAM Role for EventBridge to run ECS tasks
 resource "aws_iam_role" "eventbridge_ecs_role" {
   name = "${local.project_name}-eventbridge-ecs-role"
@@ -138,8 +110,7 @@ resource "aws_iam_role_policy" "eventbridge_ecs_policy" {
           "ecs:RunTask"
         ]
         Resource = [
-          aws_ecs_task_definition.data_collector.arn,
-          aws_ecs_task_definition.report_generator.arn
+          aws_ecs_task_definition.data_collector.arn
         ]
       },
       {

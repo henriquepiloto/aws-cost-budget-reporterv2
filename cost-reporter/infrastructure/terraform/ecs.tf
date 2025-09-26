@@ -98,39 +98,9 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
         ]
         Resource = "*"
       },
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:Query",
-          "dynamodb:Scan"
-        ]
-        Resource = [
-          aws_dynamodb_table.cost_data.arn,
-          "${aws_dynamodb_table.cost_data.arn}/index/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-        Resource = [
-          "${aws_s3_bucket.reports.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
-        Resource = aws_sns_topic.alerts.arn
-      },
+
+
+
       {
         Effect = "Allow"
         Action = [
@@ -144,7 +114,7 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
 
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "ecs" {
-  for_each = toset(["data-collector", "api-service", "report-generator"])
+  for_each = toset(["data-collector", "api-service"])
   
   name              = "/ecs/${local.project_name}/${each.key}"
   retention_in_days = 7

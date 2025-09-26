@@ -14,9 +14,8 @@ variable "container_cpu" {
   description = "CPU units for containers"
   type        = map(number)
   default = {
-    data_collector    = 256
-    api_service      = 512
-    report_generator = 1024
+    data_collector = 256
+    api_service   = 512
   }
 }
 
@@ -24,9 +23,8 @@ variable "container_memory" {
   description = "Memory for containers"
   type        = map(number)
   default = {
-    data_collector    = 512
-    api_service      = 1024
-    report_generator = 2048
+    data_collector = 512
+    api_service   = 1024
   }
 }
 
