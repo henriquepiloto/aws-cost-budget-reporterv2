@@ -23,9 +23,10 @@ resource "aws_dynamodb_table" "cost_data" {
   }
 
   global_secondary_index {
-    name     = "AccountIndex"
-    hash_key = "account_id"
-    range_key = "date"
+    name            = "AccountIndex"
+    hash_key        = "account_id"
+    range_key       = "date"
+    projection_type = "ALL"
   }
 
   tags = local.common_tags
@@ -89,22 +90,8 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
   }
 }
 
-resource "aws_s3_bucket_policy" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend.arn}/*"
-      }
-    ]
-  })
-}
+# Note: Removed public bucket policy due to account restrictions
+# Frontend will be served via CloudFront instead
 
 # SNS Topic for Alerts
 resource "aws_sns_topic" "alerts" {

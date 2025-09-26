@@ -66,14 +66,16 @@ locals {
   vpc_id = data.aws_vpc.existing.id
   vpc_cidr = data.aws_vpc.existing.cidr_block
   
-  # Use existing subnets or create new ones if needed
-  private_subnet_ids = length(data.aws_subnets.existing_private.ids) > 0 ? 
-    slice(data.aws_subnets.existing_private.ids, 0, min(2, length(data.aws_subnets.existing_private.ids))) :
-    slice(data.aws_subnets.all_subnets.ids, 0, min(2, length(data.aws_subnets.all_subnets.ids)))
+  # Use specific subnets in different AZs
+  private_subnet_ids = [
+    "subnet-036956352299e0d46",  # us-east-1a (private)
+    "subnet-071069cdff1baacfc"   # us-east-1b (private)
+  ]
   
-  public_subnet_ids = length(data.aws_subnets.existing_public.ids) > 0 ? 
-    slice(data.aws_subnets.existing_public.ids, 0, min(2, length(data.aws_subnets.existing_public.ids))) :
-    slice(data.aws_subnets.all_subnets.ids, 0, min(2, length(data.aws_subnets.all_subnets.ids)))
+  public_subnet_ids = [
+    "subnet-0ff23bc6cbd7e239a",  # us-east-1a (public)
+    "subnet-023129cfb538b2246"   # us-east-1b (public)
+  ]
   
   # Use existing RDS endpoint
   rds_endpoint = data.aws_db_instance.existing.endpoint

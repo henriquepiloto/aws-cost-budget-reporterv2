@@ -6,7 +6,7 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = local.final_public_subnet_ids
+  subnets            = local.public_subnet_ids
 
   enable_deletion_protection = false
 

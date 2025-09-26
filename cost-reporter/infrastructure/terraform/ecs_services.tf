@@ -10,7 +10,7 @@ resource "aws_ecs_service" "api_service" {
 
   network_configuration {
     security_groups  = [aws_security_group.ecs.id]
-    subnets          = local.final_private_subnet_ids
+    subnets          = local.private_subnet_ids
     assign_public_ip = false
   }
 
@@ -71,7 +71,7 @@ resource "aws_cloudwatch_event_target" "data_collector" {
 
     network_configuration {
       security_groups  = [aws_security_group.ecs.id]
-      subnets          = local.final_private_subnet_ids
+      subnets          = local.private_subnet_ids
       assign_public_ip = false
     }
   }
@@ -99,7 +99,7 @@ resource "aws_cloudwatch_event_target" "report_generator" {
 
     network_configuration {
       security_groups  = [aws_security_group.ecs.id]
-      subnets          = local.final_private_subnet_ids
+      subnets          = local.private_subnet_ids
       assign_public_ip = false
     }
   }

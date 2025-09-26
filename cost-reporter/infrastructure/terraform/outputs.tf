@@ -10,12 +10,12 @@ output "existing_vpc_cidr" {
 
 output "private_subnet_ids" {
   description = "IDs of the private subnets (existing + additional)"
-  value       = local.final_private_subnet_ids
+  value       = local.private_subnet_ids
 }
 
 output "public_subnet_ids" {
   description = "IDs of the public subnets (existing + additional)"
-  value       = local.final_public_subnet_ids
+  value       = local.public_subnet_ids
 }
 
 output "existing_rds_endpoint" {
