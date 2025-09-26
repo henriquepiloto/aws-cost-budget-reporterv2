@@ -1,0 +1,4 @@
+# Backend requirements for Prisma Cost Intelligence Platform
+boto3>=1.26.0
+pymysql>=1.0.2
+python-dateutil>=2.8.2
